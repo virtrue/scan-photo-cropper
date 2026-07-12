@@ -59,14 +59,14 @@ scan-photo-cropper/
 └── README.md
 ```
 
-## 核心脚本说明
+## 脚本说明
 
 ### prepareDataset.py
 
 准备 YOLO 训练数据集：
-- 定义 24 张扫描图的照片位置标注（像素坐标）
+- 定义扫描图的照片位置标注（像素坐标）
 - 数据增强（翻转、亮度、旋转、噪声）
-- 合并 good/ 目录中的 137 张单张照片
+- 合并 good/ 目录中的单张照片
 - 生成 dataset.yaml
 
 ### trainYOLO.py
