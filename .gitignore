@@ -1,0 +1,51 @@
+# === 模型和数据文件 (太大不上传) ===
+models/
+runs/
+weights/
+dataset/
+good/
+output/
+*.pt
+*.onnx
+
+# === 扫描原图和输出 ===
+Image_*.jpg
+new_detect_*.jpg
+thumb_*.jpg
+crop_v4.log
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# === Node.js ===
+node_modules/
+package-lock.json
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === OS ===
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# === 发布包中的模型文件 ===
+release/PhotoCropper/model/
+release/PhotoCropper/output/
+release/PhotoCropper/input/
+
+# === 辅助脚本 (标注工具等) ===
+annotate_helper.py
+check_*.py
+getSizes.py
+make_thumbs.py
+detect_new.py

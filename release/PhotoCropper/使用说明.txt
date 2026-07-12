@@ -1,0 +1,79 @@
+==========================================
+  扫描照片自动裁剪工具 v5 - 使用说明
+==========================================
+
+【工具简介】
+本工具基于 YOLO26n 深度学习模型，自动识别扫描图中的照片并裁剪为单独的图片文件。
+适用于老照片扫描件、相册扫描页等包含多张照片的图像。
+
+【系统要求】
+- Windows 10/11
+- Python 3.10 或更高版本
+- 建议有 NVIDIA GPU（可自动加速），无 GPU 也可运行（较慢）
+- 磁盘空间：约 200MB（含模型和依赖）
+
+【快速开始】
+方法一：双击运行（最简单）
+  1. 将扫描图（.jpg / .png）放入 input/ 文件夹
+  2. 双击「裁剪照片.bat」
+  3. 等待处理完成，自动打开输出目录
+
+方法二：命令行运行（更灵活）
+  打开命令提示符，进入本目录，运行：
+
+  python crop_photos.py                          # 处理 input/ 中的所有图片
+  python crop_photos.py --input ./my_scans       # 指定输入目录
+  python crop_photos.py --input scan.jpg         # 处理单张图片
+  python crop_photos.py --output ./results       # 指定输出目录
+  python crop_photos.py --conf 0.15              # 降低置信度（提高检出率）
+  python crop_photos.py --no-vis                 # 不生成检测可视化图
+
+【命令行参数】
+  --input,  -i    输入路径（目录或单张图片）      默认: input/
+  --output, -o    输出目录                        默认: output/
+  --model,  -m    模型文件路径                    默认: model/best.pt
+  --conf,   -c    检测置信度阈值 (0.0~1.0)        默认: 0.25
+  --no-vis        不生成带检测框的可视化图片
+
+【输出文件说明】
+处理完成后，output/ 目录包含：
+  - XXX_photo1.jpg, XXX_photo2.jpg ...  裁剪出的单独照片（按面积从大到小编号）
+  - XXX_detect.jpg                      检测可视化图（蓝框标记检测位置+置信度）
+
+【参数调整建议】
+- 如果有照片漏检：降低 --conf 值（如 0.15 或 0.10）
+- 如果有误检（把背景当照片）：提高 --conf 值（如 0.40）
+- 一般情况使用默认值 0.25 即可
+
+【模型信息】
+- 模型: YOLO26n (2.5M参数, 5.8 GFLOPs)
+- 训练数据: 688张图片 (24张扫描图 + 数据增强 + 137张标注照片)
+- 验证指标: mAP50=0.351, Precision=0.525, Recall=0.500
+- 训练框架: ultralytics 8.4.92, torch 2.13.0, CUDA 12.6
+
+【文件结构】
+PhotoCropper/
+├── 裁剪照片.bat         ← 双击运行
+├── crop_photos.py       ← 裁剪脚本
+├── requirements.txt     ← Python 依赖
+├── 使用说明.txt         ← 本文件
+├── model/
+│   └── best.pt          ← 训练好的 YOLO26n 模型
+├── input/               ← 放入待处理的扫描图
+└── output/              ← 裁剪结果输出
+
+【常见问题】
+Q: 提示"未找到 Python"？
+A: 请安装 Python 3.10+，安装时勾选 "Add Python to PATH"
+
+Q: 处理速度很慢？
+A: 无 GPU 时每张图约需 3-5 秒，有 NVIDIA GPU 可降至 0.3 秒
+
+Q: 某些照片没有被裁剪出来？
+A: 尝试降低置信度: python crop_photos.py --conf 0.15
+
+Q: 裁剪出的照片包含太多背景？
+A: 模型已自动添加 2% 边距，如需可修改脚本中 margin 参数
+
+Q: 可以处理 PDF 扫描件吗？
+A: 请先将 PDF 转为图片（jpg/png），再使用本工具处理

@@ -1,0 +1,6 @@
+# YOLO26n 扫描照片检测项目依赖
+ultralytics>=8.4.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+torch>=2.0.0
+torchvision>=0.15.0
