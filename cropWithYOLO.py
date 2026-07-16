@@ -4,7 +4,6 @@
 import cv2
 import os
 import numpy as np
-from pathlib import Path
 from ultralytics import YOLO
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -167,8 +166,15 @@ def crop_photos():
             print(f'  [{i+1}] {out_name} ({cw}x{ch}, conf={conf:.2f})')
             total_cropped += 1
 
-        # 保存检测结果可视化
-        annotated = result.plot()
+        # 保存检测结果可视化 (显示过滤后的框)
+        annotated = img.copy()
+        for (bx1, by1, bx2, by2, bconf, _area) in detections:
+            cv2.rectangle(annotated, (bx1, by1), (bx2, by2), (0, 255, 0), 3)
+            label = f'photograph {bconf:.2f}'
+            (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
+            cv2.rectangle(annotated, (bx1, by1 - th - 10), (bx1 + tw + 4, by1), (0, 255, 0), -1)
+            cv2.putText(annotated, label, (bx1 + 2, by1 - 5),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
         vis_path = os.path.join(OUTPUT_DIR, f'{base_name}_detect.jpg')
         cv2.imwrite(vis_path, annotated, [cv2.IMWRITE_JPEG_QUALITY, 90])
         print(f'  检测可视化: {base_name}_detect.jpg')

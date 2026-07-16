@@ -42,6 +42,7 @@ Desktop.ini
 release/PhotoCropper/model/
 release/PhotoCropper/output/
 release/PhotoCropper/input/
+*.zip
 
 # === 辅助脚本 (标注工具等) ===
 annotate_helper.py

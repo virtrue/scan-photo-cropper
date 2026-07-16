@@ -2,7 +2,6 @@
 用 YOLO26n 微调训练照片检测模型
 """
 import os
-import sys
 
 # 设置 UTF-8 编码
 os.environ['PYTHONIOENCODING'] = 'utf-8'

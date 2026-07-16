@@ -10,7 +10,6 @@ import cv2
 import numpy as np
 import os
 import shutil
-from pathlib import Path
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INPUT_DIR = BASE_DIR
@@ -202,6 +201,9 @@ def create_dataset():
             print(f"  跳过: {fname} 不存在")
             continue
         img = cv2.imread(img_path)
+        if img is None:
+            print(f"  跳过: {fname} 无法读取")
+            continue
         h, w = img.shape[:2]
         boxes = ANNOTATIONS[fname]
         labels = boxes_to_yolo(boxes, w, h)
@@ -234,6 +236,9 @@ def create_dataset():
         if not os.path.exists(img_path):
             continue
         img = cv2.imread(img_path)
+        if img is None:
+            print(f"  跳过: {fname} 无法读取")
+            continue
         h, w = img.shape[:2]
         boxes = ANNOTATIONS[fname]
         labels = boxes_to_yolo(boxes, w, h)
@@ -258,7 +263,7 @@ def create_dataset():
     # === 3. 加入good/文件夹的单张照片 (训练集) ===
     print("=== 处理good/文件夹单张照片 ===")
     good_count = 0
-    good_files = sorted([f for f in os.listdir(GOOD_DIR) if f.lower().endswith('.jpg')])
+    good_files = sorted([f for f in os.listdir(GOOD_DIR) if f.lower().endswith(('.jpg', '.jpeg'))])
 
     for fname in good_files:
         img_path = os.path.join(GOOD_DIR, fname)

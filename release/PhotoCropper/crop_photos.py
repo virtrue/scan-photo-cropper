@@ -11,10 +11,8 @@
 import cv2
 import os
 import sys
-import glob
 import argparse
 import numpy as np
-from pathlib import Path
 from ultralytics import YOLO
 
 # 默认路径 (相对于脚本所在目录)
@@ -51,7 +49,7 @@ def nms_filter(detections, iou_thresh=0.4):
     return keep
 
 
-def process_image(img_path, model, output_dir, conf_thresh=0.25, save_vis=True):
+def process_image(img_path, model, output_dir, conf_thresh=0.25, device='auto', save_vis=True):
     """处理单张扫描图，返回裁剪的照片数量"""
     fname = os.path.basename(img_path)
     base_name = os.path.splitext(fname)[0]
@@ -68,7 +66,7 @@ def process_image(img_path, model, output_dir, conf_thresh=0.25, save_vis=True):
     # 推理检测
     results = model.predict(
         source=img, imgsz=1024, conf=conf_thresh,
-        iou=0.3, device='0', verbose=False, max_det=10,
+        iou=0.3, device=device, verbose=False, max_det=10,
     )
     result = results[0]
     boxes = result.boxes
@@ -78,7 +76,7 @@ def process_image(img_path, model, output_dir, conf_thresh=0.25, save_vis=True):
         print(f'  未检测到照片，降低置信度重试...')
         results = model.predict(
             source=img, imgsz=1024, conf=0.10,
-            iou=0.3, device='0', verbose=False, max_det=10,
+            iou=0.3, device=device, verbose=False, max_det=10,
         )
         result = results[0]
         boxes = result.boxes
@@ -135,9 +133,16 @@ def process_image(img_path, model, output_dir, conf_thresh=0.25, save_vis=True):
         print(f'  [{i+1}] {out_name} ({cw}x{ch}, conf={conf:.2f})')
         cropped_count += 1
 
-    # 保存检测可视化
+    # 保存检测可视化 (显示过滤后的框)
     if save_vis:
-        annotated = result.plot()
+        annotated = img.copy()
+        for (bx1, by1, bx2, by2, bconf, _area) in detections:
+            cv2.rectangle(annotated, (bx1, by1), (bx2, by2), (0, 255, 0), 3)
+            label = f'photograph {bconf:.2f}'
+            (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
+            cv2.rectangle(annotated, (bx1, by1 - th - 10), (bx1 + tw + 4, by1), (0, 255, 0), -1)
+            cv2.putText(annotated, label, (bx1 + 2, by1 - 5),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
         vis_path = os.path.join(output_dir, f'{base_name}_detect.jpg')
         cv2.imwrite(vis_path, annotated, [cv2.IMWRITE_JPEG_QUALITY, 90])
         print(f'  检测可视化: {base_name}_detect.jpg')
@@ -166,6 +171,8 @@ def main():
                         help='模型文件路径, 默认: model/best.pt')
     parser.add_argument('--conf', '-c', type=float, default=0.25,
                         help='检测置信度阈值 (默认 0.25, 降低可提高召回率)')
+    parser.add_argument('--device', '-d', default='auto',
+                        help='推理设备: auto(自动)/0(GPU)/cpu, 默认: auto')
     parser.add_argument('--no-vis', action='store_true',
                         help='不生成检测可视化图片')
     args = parser.parse_args()
@@ -203,6 +210,7 @@ def main():
     print(f'输出: {args.output}')
     print(f'模型: {args.model}')
     print(f'置信度: {args.conf}')
+    print(f'设备: {args.device}')
 
     # 创建输出目录
     os.makedirs(args.output, exist_ok=True)
@@ -216,7 +224,8 @@ def main():
     for img_path in img_files:
         total += process_image(
             img_path, model, args.output,
-            conf_thresh=args.conf, save_vis=not args.no_vis
+            conf_thresh=args.conf, device=args.device,
+            save_vis=not args.no_vis
         )
 
     print(f'\n{"=" * 50}')
